@@ -4,6 +4,8 @@ This codebase holds the code to deploy a serverless version of the
 cfn-flip tool with, capable of converting CloudFormation between JSON
 and YAML and the ability to convert JSON to Ruby CfnDsl.
 
+A demo is available at: https://cfnflip.com/
+
 ## Requirements
 
 - Modern Ruby version with the bundler gem installed
