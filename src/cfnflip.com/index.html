@@ -1,0 +1,698 @@
+<html>
+  <head>
+    <title>CFN Flip - Convert CloudFormation between JSON, YAML and Ruby's
+      CfnDsl.</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/codemirror.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/addon/display/fullscreen.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" />
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/codemirror.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/addon/display/placeholder.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/addon/display/fullscreen.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/addon/display/panel.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/mode/ruby/ruby.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/mode/yaml/yaml.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.37.0/mode/javascript/javascript.min.js"></script>
+
+    <style>
+      .CodeMirror-buttonsPanel {
+        margin-bottom: .5em;
+      }
+
+      .CodeMirror-buttonsPanel button {
+        padding: .5em;
+        width: 4em;
+        margin-right: .5em;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .CodeMirror {
+        font-family: "Ubuntu Mono";
+        line-height: 1.2em;
+        height: 90%;
+      }
+
+      .cssload-jar {
+        display: none;
+        position: fixed;
+        width: 155px;
+        margin: 39px auto 0;
+        text-align: center;
+        top: 30%;
+        left: 50%;
+        z-index: 9999;
+      }
+
+      .cssload-jar .cssload-mouth {
+        width: 31px;
+        height: 8px;
+        margin: 0 auto -1px;
+        border-right: 3px solid rgb(0, 0, 0);
+        border-left: 3px solid rgb(0, 0, 0);
+        border-radius: 15px;
+        -o-border-radius: 15px;
+        -ms-border-radius: 15px;
+        -webkit-border-radius: 15px;
+        -moz-border-radius: 15px;
+      }
+
+      .cssload-jar .cssload-neck {
+        width: 27px;
+        height: 36px;
+        margin: 0 auto -5px;
+        z-index: 7;
+        position: relative;
+        background-color: rgb(255, 255, 255);
+        border-right: 3px solid rgb(0, 0, 0);
+        border-left: 3px solid rgb(0, 0, 0);
+      }
+
+      .cssload-jar .cssload-bubble {
+        width: 8px;
+        height: 8px;
+        position: absolute;
+        background-color: rgb(212, 19, 58);
+        opacity: 0.4;
+        left: 71px;
+        z-index: 8;
+        top: 85px;
+        border-radius: 100%;
+        -o-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+        animation: cssload-buble 2.3s linear 1.15s infinite;
+        -o-animation: cssload-buble 2.3s linear 1.15s infinite;
+        -ms-animation: cssload-buble 2.3s linear 1.15s infinite;
+        -webkit-animation: cssload-buble 2.3s linear 1.15s infinite;
+        -moz-animation: cssload-buble 2.3s linear 1.15s infinite;
+      }
+
+      .cssload-jar .cssload-bubble + .cssload-bubble {
+        left: 67px;
+        top: 93px;
+        width: 12px;
+        height: 12px;
+        animation-duration: 3.45s;
+        -o-animation-duration: 3.45s;
+        -ms-animation-duration: 3.45s;
+        -webkit-animation-duration: 3.45s;
+        -moz-animation-duration: 3.45s;
+      }
+
+      .cssload-jar .cssload-base {
+        margin: auto;
+        width: 93px;
+        height: 77px;
+        border: 3px solid rgb(0, 0, 0);
+        border-radius: 50%;
+        -o-border-radius: 50%;
+        -ms-border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        z-index: 5;
+      }
+
+      .cssload-jar .cssload-base .cssload-bubble {
+        left: 12px;
+        top: 39px;
+        animation: cssload-bounce 2.65s linear 0s infinite alternate;
+        -o-animation: cssload-bounce 2.65s linear 0s infinite alternate;
+        -ms-animation: cssload-bounce 2.65s linear 0s infinite alternate;
+        -webkit-animation: cssload-bounce 2.65s linear 0s infinite alternate;
+        -moz-animation: cssload-bounce 2.65s linear 0s infinite alternate;
+      }
+
+      .cssload-jar .cssload-base .cssload-bubble + .cssload-bubble {
+        left: 58px;
+        top: 31px;
+        animation-duration: 3.45s;
+        -o-animation-duration: 3.45s;
+        -ms-animation-duration: 3.45s;
+        -webkit-animation-duration: 3.45s;
+        -moz-animation-duration: 3.45s;
+      }
+
+      .cssload-jar .cssload-liquid {
+        height: 31px;
+        background-color: rgb(212, 19, 58);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
+      .cssload-jar .cssload-wave {
+        width: 46px;
+        height: 15px;
+        position: absolute;
+        background-color: rgb(212, 19, 58);
+        left: 0;
+        top: 44px;
+        animation: cssload-wave 1.15s linear 1.15s infinite alternate;
+        -o-animation: cssload-wave 1.15s linear 1.15s infinite alternate;
+        -ms-animation: cssload-wave 1.15s linear 1.15s infinite alternate;
+        -webkit-animation: cssload-wave 1.15s linear 1.15s infinite alternate;
+        -moz-animation: cssload-wave 1.15s linear 1.15s infinite alternate;
+        border-radius: 50%;
+        -o-border-radius: 50%;
+        -ms-border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+      }
+
+      .cssload-jar .cssload-wave + .cssload-wave {
+        left: auto;
+        right: 0;
+      }
+
+      @keyframes cssload-wave {
+        from {
+          transform: translateX(77px);
+        }
+        to {
+          transform: translateX(-77px);
+        }
+      }
+
+      @-o-keyframes cssload-wave {
+        from {
+          -o-transform: translateX(77px);
+        }
+        to {
+          -o-transform: translateX(-77px);
+        }
+      }
+
+      @-ms-keyframes cssload-wave {
+        from {
+          -ms-transform: translateX(77px);
+        }
+        to {
+          -ms-transform: translateX(-77px);
+        }
+      }
+
+      @-webkit-keyframes cssload-wave {
+        from {
+          -webkit-transform: translateX(77px);
+        }
+        to {
+          -webkit-transform: translateX(-77px);
+        }
+      }
+
+      @-moz-keyframes cssload-wave {
+        from {
+          -moz-transform: translateX(77px);
+        }
+        to {
+          -moz-transform: translateX(-77px);
+        }
+      }
+
+      @keyframes cssload-bounce {
+        0% {
+          transform: translate(4px, 12px);
+        }
+        50% {
+          transform: translate(0, -12px);
+        }
+        100% {
+          transform: translate(-4px, -29px);
+          opacity: 1;
+        }
+      }
+
+      @-o-keyframes cssload-bounce {
+        0% {
+          -o-transform: translate(4px, 12px);
+        }
+        50% {
+          -o-transform: translate(0, -12px);
+        }
+        100% {
+          -o-transform: translate(-4px, -29px);
+          opacity: 1;
+        }
+      }
+
+      @-ms-keyframes cssload-bounce {
+        0% {
+          -ms-transform: translate(4px, 12px);
+        }
+        50% {
+          -ms-transform: translate(0, -12px);
+        }
+        100% {
+          -ms-transform: translate(-4px, -29px);
+          opacity: 1;
+        }
+      }
+
+      @-webkit-keyframes cssload-bounce {
+        0% {
+          -webkit-transform: translate(4px, 12px);
+        }
+        50% {
+          -webkit-transform: translate(0, -12px);
+        }
+        100% {
+          -webkit-transform: translate(-4px, -29px);
+          opacity: 1;
+        }
+      }
+
+      @-moz-keyframes cssload-bounce {
+        0% {
+          -moz-transform: translate(4px, 12px);
+        }
+        50% {
+          -moz-transform: translate(0, -12px);
+        }
+        100% {
+          -moz-transform: translate(-4px, -29px);
+          opacity: 1;
+        }
+      }
+
+      @keyframes cssload-buble {
+        0% {
+          transform: translate(2px, 8px);
+        }
+        25% {
+          transform: translate(0, 0px);
+        }
+        50% {
+          transform: translate(-2px, -19px);
+        }
+        75% {
+          transform: translate(0, -39px);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(2px, -77px);
+          opacity: 0;
+        }
+      }
+
+      @-o-keyframes cssload-buble {
+        0% {
+          -o-transform: translate(2px, 8px);
+        }
+        25% {
+          -o-transform: translate(0, 0px);
+        }
+        50% {
+          -o-transform: translate(-2px, -19px);
+        }
+        75% {
+          -o-transform: translate(0, -39px);
+          opacity: 1;
+        }
+        100% {
+          -o-transform: translate(2px, -77px);
+          opacity: 0;
+        }
+      }
+
+      @-ms-keyframes cssload-buble {
+        0% {
+          -ms-transform: translate(2px, 8px);
+        }
+        25% {
+          -ms-transform: translate(0, 0px);
+        }
+        50% {
+          -ms-transform: translate(-2px, -19px);
+        }
+        75% {
+          -ms-transform: translate(0, -39px);
+          opacity: 1;
+        }
+        100% {
+          -ms-transform: translate(2px, -77px);
+          opacity: 0;
+        }
+      }
+
+      @-webkit-keyframes cssload-buble {
+        0% {
+          -webkit-transform: translate(2px, 8px);
+        }
+        25% {
+          -webkit-transform: translate(0, 0px);
+        }
+        50% {
+          -webkit-transform: translate(-2px, -19px);
+        }
+        75% {
+          -webkit-transform: translate(0, -39px);
+          opacity: 1;
+        }
+        100% {
+          -webkit-transform: translate(2px, -77px);
+          opacity: 0;
+        }
+      }
+
+      @-moz-keyframes cssload-buble {
+        0% {
+          -moz-transform: translate(2px, 8px);
+        }
+        25% {
+          -moz-transform: translate(0, 0px);
+        }
+        50% {
+          -moz-transform: translate(-2px, -19px);
+        }
+        75% {
+          -moz-transform: translate(0, -39px);
+          opacity: 1;
+        }
+        100% {
+          -moz-transform: translate(2px, -77px);
+          opacity: 0;
+        }
+      }
+      .logo {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 236px;
+        z-index: 9999;
+      }
+      #toast1, #toast2 {
+        visibility: hidden;
+        max-width: 80px;
+        height: 50px;
+        /*margin-left: -125px;*/
+        margin: auto;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        position: absolute;
+        z-index: 9999;
+        left: 0;right:0;
+        top: 30px;
+        font-size: 17px;
+        white-space: nowrap;
+      }
+      #toast1, #toast2 #img{
+        width: 50px;
+        height: 50px;
+        float: left;
+        padding-top: 16px;
+        padding-bottom: 16px;
+        box-sizing: border-box;
+        background-color: #111;
+        color: #fff;
+      }
+      #toast1, #toast2 #desc{
+        color: #fff;
+        padding: 16px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      #toast1.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;
+      }
+
+      #toast2.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;
+      }
+
+      @-webkit-keyframes fadein {
+        from {bottom: 0; opacity: 0;}
+        to {bottom: 30px; opacity: 1;}
+      }
+
+      @keyframes fadein {
+        from {bottom: 0; opacity: 0;}
+        to {bottom: 30px; opacity: 1;}
+      }
+
+      @-webkit-keyframes expand {
+        from {min-width: 50px}
+        to {min-width: 350px}
+      }
+
+      @keyframes expand {
+        from {min-width: 50px}
+        to {min-width: 350px}
+      }
+      @-webkit-keyframes stay {
+        from {min-width: 350px}
+        to {min-width: 350px}
+      }
+
+      @keyframes stay {
+        from {min-width: 350px}
+        to {min-width: 350px}
+      }
+      @-webkit-keyframes shrink {
+        from {min-width: 350px;}
+        to {min-width: 50px;}
+      }
+
+      @keyframes shrink {
+        from {min-width: 350px;}
+        to {min-width: 50px;}
+      }
+
+      @-webkit-keyframes fadeout {
+        from {bottom: 30px; opacity: 1;}
+        to {bottom: 60px; opacity: 0;}
+      }
+
+      @keyframes fadeout {
+        from {bottom: 30px; opacity: 1;}
+        to {bottom: 60px; opacity: 0;}
+      }
+
+      .footer {
+         position:fixed;
+         left:0px;
+         bottom:0px;
+         height:30px;
+         width:100%;
+         background:#fff;
+         color:#ccc;
+         font-size: smaller;
+         text-align: right;
+      }
+
+      .footer a:link { color : #aaa; }
+      .footer a:visited { color : #aaa; }
+      .footer a:hover { color : #888; }
+      .footer a:active { color : #aaa; }
+
+      /* IE 6 */
+      * html .footer {
+         position:absolute;
+         top:expression((0-(footer.offsetHeight)+(document.documentElement.clientHeight ? document.documentElement.clientHeight : document.body.clientHeight)+(ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop))+'px');
+      }
+    </style>
+    <script>
+        (function (mod) {
+            if (typeof exports === 'object' && typeof module === 'object') { // CommonJS
+                mod(
+                    require('codemirror/lib/codemirror'),
+                    require('codemirror/addon/display/panel')
+                );
+            }
+            else if (typeof define === 'function' && define.amd) { // AMD
+                define([
+                    'codemirror/lib/codemirror',
+                    'codemirror/addon/display/panel'
+                ], mod);
+            }
+            else { // Plain browser env
+                mod(CodeMirror);
+            }
+        })(function (CodeMirror) {
+            "use strict";
+
+            var PANEL_ELEMENT_CLASS = "CodeMirror-buttonsPanel";
+
+            CodeMirror.defineOption("buttons", [], function (cm, value, old) {
+                var panelNode = document.createElement("div");
+                panelNode.className = PANEL_ELEMENT_CLASS;
+                for (var i = 0, len = value.length; i < len; i++) {
+                    var button = createButton(cm, value[i]);
+                    panelNode.appendChild(button);
+                }
+                cm.addPanel(panelNode);
+            });
+
+            function createButton(cm, config) {
+                var buttonNode;
+
+                if (config.el) {
+                    if (typeof config.el === 'function') {
+                        buttonNode = config.el(cm);
+                    } else {
+                        buttonNode = config.el;
+                    }
+                } else {
+                    buttonNode = document.createElement('button');
+                    buttonNode.innerHTML = config.label;
+                    buttonNode.setAttribute('type', 'button');
+                    buttonNode.setAttribute('tabindex', '-1');
+
+                    buttonNode.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        cm.focus();
+                        config.callback(cm);
+                    });
+
+                    if (config.class) {
+                        buttonNode.className = config.class;
+                    }
+
+                    if (config.title) {
+                        buttonNode.setAttribute('title', config.title);
+                    }
+                }
+
+                if (config.hotkey) {
+                    var map = {};
+                    map[config.hotkey] = config.callback;
+                    cm.addKeyMap(map);
+                }
+
+                return buttonNode;
+            }
+        });
+    </script>
+  </head>
+  <body>
+    <div class="logo">
+      <a href="https://binx.io/" target="_new"><img
+          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOwAAAA0CAIAAAAG3EMBAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIE1hY2ludG9zaCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpEN0Q5ODlCRDRCRkMxMUU4OTJCMEQ1OTg2OThCQkU4MyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpEN0Q5ODlCRTRCRkMxMUU4OTJCMEQ1OTg2OThCQkU4MyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkQ3RDk4OUJCNEJGQzExRTg5MkIwRDU5ODY5OEJCRTgzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkQ3RDk4OUJDNEJGQzExRTg5MkIwRDU5ODY5OEJCRTgzIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iHroZwAAE2BJREFUeNrsXQtU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"></a>
+    </div>
+    <textarea id="cfnflip" placeholder="Paste your JSON or YAML CloudFormation Template here..."></textarea>
+    <div class="cssload-jar">
+      <div class="cssload-mouth"></div>
+      <div class="cssload-neck"></div>
+      <div class="cssload-base">
+        <div class="cssload-liquid"> </div>
+        <div class="cssload-wave"></div>
+        <div class="cssload-wave"></div>
+        <div class="cssload-bubble"></div>
+        <div class="cssload-bubble"></div>
+      </div>
+      <div class="cssload-bubble"></div>
+      <div class="cssload-bubble"></div>
+    </div>
+    <div id="toast1"><div id="img"></div><div id="desc">Invalid JSON or YAML!</div></div>
+    <div id="toast2"><div id="img"></div><div id="desc">If you posted YAML, flip to JSON first!</div></div>
+    <div class="footer">Written by <a href="https://drvink.com/" target="_new">Dennis Vink</a>, AWS Cloud Consultant at <a href="https://binx.io/" target="_new">Binx</a>.</div>
+    <script>
+        var textArea = document.getElementById("cfnflip");
+        var editor = CodeMirror.fromTextArea(textArea, {
+            lineNumbers: true,
+            matchBrackets: true,
+            fullScreen: false,
+            styleActiveLine: true,
+            setSize: {
+                height: "90%",
+                width: "90%"
+            },
+            mode: 'gfm',
+            buttons: [
+                {
+                    class: 'flip-it',
+                    label: 'Flip!',
+                    callback: function (cm) {
+                        $(':button').prop('disabled', true);
+                        $(".cssload-jar").fadeIn();
+                        $.ajax({
+                            type: "POST",
+                            url: '/flip/',
+                            data: {code: editor.getValue()},
+                            success: function (data) {
+                                editor.setValue(data);
+                                $(':button').prop('disabled', false);
+                                $(".cssload-jar").fadeOut();
+                            },
+                            error: function (data) {
+                                $(':button').prop('disabled', false);
+                                $(".cssload-jar").fadeOut();
+                                var x = document.getElementById("toast1");
+                                x.className = "show";
+                                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);
+                            }
+                        });
+                    }
+                },
+                {
+                    class: 'ruby-fi',
+                    label: 'Rubyfi',
+                    callback: function (cm) {
+                        $(':button').prop('disabled', true);
+                        $(".cssload-jar").fadeIn();
+                        $.ajax({
+                            type: "POST",
+                            url: '/cfn2dsl/',
+                            data: {code: editor.getValue()},
+                            success: function (data) {
+                                $(':button').prop('disabled', false);
+                                $(".cssload-jar").fadeOut();
+                                if (data.length > 1) {
+                                    editor.setValue(data);
+                                }
+                                else {
+                                    var x = document.getElementById("toast2");
+                                    x.className = "show";
+                                    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    class: 'job-it',
+                    label: 'Jobs',
+                    callback: function (cm) {
+                        window.open('https://www.binx.io/careers/', '_blank');
+                    }
+                }
+            ]
+        });
+        editor.on("change", function() {
+          try {
+            JSON.parse(editor.getValue());
+            editor.setOption("mode", "javascript");
+          } catch (e) {
+            val = editor.getValue();
+            if(val.includes("CloudFormation do")) {
+              editor.setOption("mode", "ruby");
+            } else {
+              editor.setOption("mode", "yaml");
+            }
+          }
+        });
+    </script>
+  </body>
+</html>

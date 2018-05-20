@@ -1,0 +1,5 @@
+.env.private
+.idea/
+*.swp
+/build/*
+.gitold/

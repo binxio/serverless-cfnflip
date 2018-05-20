@@ -1,0 +1,228 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "DomainName": {
+      "Type": "String",
+      "Description": "Domain name for the hosted zone",
+      "Default": "cfnflip.com"
+    },
+    "ProjectName": {
+      "Type": "String",
+      "Description": "Name of your project, e.g. cfnflip",
+      "Default": "CfnFlip"
+    }
+  },
+  "Resources": {
+    "CloudformationBucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+    "LambdaFunctionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Path": "/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Action": [
+                    "route53domains:UpdateDomainNameservers"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            },
+            "PolicyName": "Route53LambdaUpdateRole"
+          }
+        ]
+      }
+    },
+    "UpdateRoute53": {
+      "Type": "Custom::UpdateRoute53",
+      "Properties": {
+        "HostedZone": {
+          "Ref": "DomainName"
+        },
+        "Nameservers": {
+          "Fn::GetAtt": [
+            "HostedZone",
+            "NameServers"
+          ]
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "LambdaFunction",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "LambdaFunction",
+        "HostedZone"
+      ]
+    },
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaFunctionRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "\n",
+              [
+                "var AWS = require('aws-sdk');",
+                "AWS.config.update({region: 'us-east-1'});",
+                "var response = require('cfn-response');",
+                "exports.handler = function(event, context) {",
+                "    var nameservers = event.ResourceProperties.Nameservers;",
+                "    var domainname  = event.ResourceProperties.HostedZone;",
+                "",
+                "    console.log(nameservers);",
+                "    console.log(domainname);",
+                "    if (event.RequestType == 'Delete') {",
+                "        var responseData = { Value: 'Go ahead.' };",
+                "        response.send(event, context, response.SUCCESS, responseData);",
+                "    }",
+                "    else",
+                "    {",
+                "",
+                "        var route53domains = new AWS.Route53Domains();",
+                "        var ServerList = [];",
+                "        nameservers.forEach(function(server){",
+                "          ServerList.push({",
+                "            Name: server",
+                "          })",
+                "        });",
+                "        route53domains.updateDomainNameservers(",
+                "            {",
+                "                DomainName: domainname,",
+                "                Nameservers: ServerList",
+                "            }, function(err, data) {",
+                "                if (err) console.log(err, err.stack);",
+                "                else     console.log(data);",
+                "                var responseData = { Value: 'Hurray!' };",
+                "                response.send(event, context, response.SUCCESS, responseData);",
+                "            }",
+                "        )",
+                "    }",
+                "};"
+              ]
+            ]
+          }
+        },
+        "Runtime": "nodejs6.10",
+        "MemorySize": "128",
+        "Timeout": "25"
+      },
+      "DependsOn": "LambdaFunctionRole"
+    },
+    "HostedZone": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "HostedZoneConfig": {
+          "Comment": {
+            "Fn::Join": [
+              "",
+              [
+                "HostedZone for ",
+                {
+                  "Ref": "DomainName"
+                }
+              ]
+            ]
+          }
+        },
+        "Name": {
+          "Ref": "DomainName"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "HostedZoneId": {
+      "Value": {
+        "Ref": "HostedZone"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ProjectName"
+              },
+              "HostedZoneId"
+            ]
+          ]
+        }
+      }
+    },
+    "HostedZoneName": {
+      "Value": {
+        "Ref": "DomainName"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ProjectName"
+              },
+              "HostedZoneName"
+            ]
+          ]
+        }
+      }
+    },
+    "CloudformationBucket": {
+      "Value": {
+        "Ref": "CloudformationBucket"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ProjectName"
+              },
+              "CloudformationBucket"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

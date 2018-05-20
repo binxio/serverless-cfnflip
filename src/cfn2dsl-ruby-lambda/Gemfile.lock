@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    awesome_print (1.8.0)
+    erubis (2.7.0)
+    extlib (0.9.16)
+    rake (12.3.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  awesome_print
+  erubis
+  extlib
+  rake
+
+BUNDLED WITH
+   1.16.1

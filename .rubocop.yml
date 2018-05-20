@@ -1,0 +1,29 @@
+AllCops:
+  DisplayCopNames: true
+  TargetRubyVersion: 2.3
+  Include:
+    - "lib/*.rb"
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    default: '()'
+    '%i':    '()'
+    '%w':    '()'
+
+Layout/AlignParameters:
+  Enabled: false
+
+Layout/IndentHash:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Style/BracesAroundHashParameters:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
