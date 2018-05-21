@@ -6,6 +6,13 @@ and YAML and the ability to convert JSON to Ruby CfnDsl.
 
 A demo is available at: https://cfnflip.com/
 
+## Architecture
+
+cfnflip consists of an S3 bucket, a Route53 Hosted Zone, 4 Lambda functions,
+an API Gateway, and a CloudFront distribution:
+
+![cfn-flip-architecture](https://assets.cfnflip.com/cfnflip-architecture-800.png "cfnflip.com architecture")
+
 ## Requirements
 
 - Modern Ruby version with the bundler gem installed
