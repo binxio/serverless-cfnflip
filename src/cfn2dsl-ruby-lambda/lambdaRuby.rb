@@ -3,7 +3,27 @@
 require "uri"
 require_relative 'cfn2dsl_lib/cfn2dsl'
 
-payload = URI.decode(JSON.parse(ARGV[0])["body"].tr('+', ' ')).gsub(/^code\=/,'')
+# Monkey patch broken cfn2dsl
+class IntrinsicFunction
+  def fn_import_value
+    value     = '"' + @parameters + '"'
+    return "FnImportValue(#{value})"
+  end
+
+  def fn_sub
+    unless @parameters.respond_to? 'each'
+      value     = '"' + @parameters + '"'
+      return "FnSub(#{value})" 
+    end
+    origin = '"' + @parameters[0].gsub('"'){'\\"'} + '"'
+    values    = @parameters[1].ai
+    return "FnSub(#{origin}, #{values})"
+  end
+end
+
+#payload = URI.decode(JSON.parse(ARGV[0])["body"].tr('+', ' ')).gsub(/^code\=/,'')
+payload = File.open("/Users/dennis/code/cfnflip/templates/cfnflip-application-stack.json").read
+
 template = JSON.parse(payload)
 cfndsl   = CloudFormation.new(template)
 dsl = Render.new(cfndsl).cfn_to_cfndsl
