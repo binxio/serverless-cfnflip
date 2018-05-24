@@ -21,8 +21,7 @@ class IntrinsicFunction
   end
 end
 
-#payload = URI.decode(JSON.parse(ARGV[0])["body"].tr('+', ' ')).gsub(/^code\=/,'')
-payload = File.open("/Users/dennis/code/cfnflip/templates/cfnflip-application-stack.json").read
+payload = URI.decode(JSON.parse(ARGV[0])["body"].tr('+', ' ')).gsub(/^code\=/,'')
 
 template = JSON.parse(payload)
 cfndsl   = CloudFormation.new(template)
