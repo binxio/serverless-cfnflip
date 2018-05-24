@@ -350,7 +350,7 @@ template = CloudFormation do
   end
 
   Resource("ApiGatewayMethodGet") do
-    Type("AWS:::ApiGateway::Method")
+    Type("AWS::ApiGateway::Method")
     Property(:HttpMethod, "GET")
     Property(:RequestParameters, {})
     Property(:ResourceId, FnGetAtt("ApiGatewayRestApi", "RootResourceId"))
