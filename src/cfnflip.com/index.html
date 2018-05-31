@@ -32,7 +32,7 @@
 
       .CodeMirror-buttonsPanel button {
         padding: .5em;
-        width: 4em;
+        width: auto;
         margin-right: .5em;
         text-align: center;
         cursor: pointer;
@@ -676,6 +676,20 @@
                     label: 'Jobs',
                     callback: function (cm) {
                         window.open('https://www.binx.io/careers/', '_blank');
+                    }
+                },
+                {
+                    class: 'github-it',
+                    label: 'Github',
+                    callback: function (cm) {
+                        window.open('https://github.com/binxio/serverless-cfnflip', '_blank');
+                    }
+                },
+                {
+                    class: 'behind-the-scenes',
+                    label: 'Behind the scenes',
+                    callback: function (cm) {
+                        window.open('https://binx.io/blog/2018/05/20/making-of-cfnflip-serverless-apigateway-python-nodejs-ruby-lamda/', '_blank');
                     }
                 }
             ]
