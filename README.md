@@ -6,6 +6,9 @@ and YAML and the ability to convert JSON to Ruby CfnDsl.
 
 A demo is available at: https://cfnflip.com/
 
+The original cfn-flip command line tool was written by Steve Engledow.
+You can find his github repository here: https://github.com/awslabs/aws-cfn-template-flip
+
 ## Architecture
 
 cfnflip consists of an S3 bucket, a Route53 Hosted Zone, 4 Lambda functions,
